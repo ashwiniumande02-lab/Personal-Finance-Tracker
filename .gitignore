@@ -1,0 +1,79 @@
+"""
+print("Invalid number. Try again.")
+return _prompt_float(prompt)
+
+
+
+
+def run_cli():
+t = FinanceTracker()
+print("Welcome to Personal Finance Tracker")
+while True:
+print("\nMenu:\n 1) Add expense\n 2) List expenses\n 3) Delete expense by id\n 4) Categories (list/add)\n 5) Monthly report (print/export)\n 6) Save data\n 7) Load data\n 8) Exit")
+choice = input("Choose an option: ").strip()
+if choice == "1":
+d = _prompt_date()
+amt = _prompt_float("Amount: ")
+print("Categories: ", ", ".join(t.list_categories()))
+cat = input("Category (or new name): ").strip()
+desc = input("Description (optional): ")
+e = t.add_expense(d, amt, cat or "Uncategorized", desc)
+print(f"Added: id={e.id} {e.date} {e.category} {e.amount}")
+elif choice == "2":
+print("All expenses:")
+for e in t.expenses:
+print(f"{e.id}: {e.date} | {e.category:<12} | {e.amount:8.2f} | {e.description}")
+elif choice == "3":
+eid = input("Expense id to delete: ").strip()
+if eid.isdigit() and t.delete_expense(int(eid)):
+print("Deleted")
+else:
+print("Not found")
+elif choice == "4":
+print("Categories:")
+for c in t.list_categories():
+print(" ", c)
+if input("Add new category? (y/N): ").strip().lower() == "y":
+newc = input("Category name: ").strip()
+if t.add_category(newc):
+print("Added")
+else:
+print("Not added (may already exist or empty)")
+elif choice == "5":
+y = int(input("Year (YYYY): "))
+m = int(input("Month (1-12): "))
+rpt = t.month_report(y, m)
+print(f"Report for {y}-{m:02d} — Overall: {rpt['overall_total']:.2f}")
+for k, v in rpt["totals_by_category"].items():
+print(f" {k}: {v:.2f}")
+if input("Export CSV? (y/N): ").strip().lower() == "y":
+csvf = t.export_month_csv(y, m)
+print("Exported to", csvf)
+if input("Export TXT summary? (y/N): ").strip().lower() == "y":
+txtf = t.export_month_summary_txt(y, m)
+print("Exported to", txtf)
+elif choice == "6":
+fn = input(f"Save filename (default: {t.filename}): ").strip() or t.filename
+t.save(fn)
+print("Saved to", fn)
+elif choice == "7":
+fn = input(f"Load filename (default: {t.filename}): ").strip() or t.filename
+try:
+t.load(fn)
+print("Loaded")
+except Exception as e:
+print("Load failed:", e)
+elif choice == "8":
+if input("Save before exit? (y/N): ").strip().lower() == "y":
+t.save()
+print("Saved")
+print("Goodbye")
+break
+else:
+print("Unknown option")
+
+
+
+
+if __name__ == "__main__":
+run_cli()
